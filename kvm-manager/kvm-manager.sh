@@ -1,5 +1,5 @@
 #!/bin/bash
-#Kvm network card, disk, memory, cpu、clone and snapshot management.
+#Kvm network card, disk, memory, cpu management.
 #The implementation of each module of the script, there will be a comment on its function on the code.
 #nong-v 2019-03-14
 
@@ -15,9 +15,9 @@ cat >/tmp/disk.xml<<-EOF
     <target dev='$disk' bus='virtio'/>
 </disk>
 EOF
-if [ $1 -eq 1 ];then		#add disk
+if [ $1 -eq 1 ];then
 	virsh attach-device $name /tmp/disk.xml --persistent ||rm -rf /tmp/disk.xml
-elif [ $1 -eq 2 ];then		#del disk
+elif [ $1 -eq 2 ];then
 	echo -e "You are currently preparing to delete the $disk disk device for the host named $name！...
 	\033[31mPlease be cautious！！！\033[0m"
 	read -p "Are you sure you want to delete?(yes/no) : " choese
@@ -42,9 +42,9 @@ cat >/tmp/network.xml<<-EOF
 </interface>
 EOF
 [ -n "$mode" ] && sed -i "1,3s/network/$mode/g;s/default/$card/g" /tmp/network.xml
-if [ $1 -eq 1 ];then		#add Network card
+if [ $1 -eq 1 ];then
 	virsh attach-device $name /tmp/network.xml --persistent && rm -rf /tmp/network.xml
-elif [ $1 -eq 2 ];then		#del Network card
+elif [ $1 -eq 2 ];then
 	echo -e "You are currently preparing to delete the mac address of the host named $name as $net NIC device!...
 	\033[31mPlease be cautious！！！\033[0m"
 	read -p "Are you sure you want to delete?(yes/no) : " choese
@@ -186,7 +186,7 @@ fi
 #Set the script's global environment variable
 mac=$(uuidgen|sed 's/../&:/g;s/-//g'|cut -c1-16)
 CPU=$(lscpu|grep -w "CPU(s):"|awk '{print $2}')
-[ -n $route ] && route=/var/lib/libvirt/images
+[ -z $route ] && route=/var/lib/libvirt/images
 if [[ -n $host ]];then
 	uuid=$(virsh domuuid $host|awk 'NR==1')
 	host_disk=$(virsh domblklist $host|awk 'NR==3{print $2}')
